@@ -76,7 +76,7 @@ class Cubicle:
             self.CF = 1.00
             return
 
-        if (self.V_oc < 0.6) and (self.height < 508) and (self.width < 508) and (self.depth < 203.2):
+        if (self.V_oc < 0.6) and (self.height < 508) and (self.width < 508) and (self.depth <= 203.2):
             self.enclosure_type = "Shallow"
         else:
             self.enclosure_type = "Typical"
