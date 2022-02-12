@@ -42,8 +42,6 @@ The engineers using this library must be **confident** that it will produce corr
 
 4. Basic checks are included to help check if calculation parameters are within applicable bounds.
 
-Note that
-
 # Unit conventions
 
 * All distances are in units of mm.
