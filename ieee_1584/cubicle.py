@@ -50,7 +50,7 @@ class Cubicle:
         assert self.EC in ("VCB", "VCBB", "HCB", "HOA", "VOA",)
 
     def sanity_check(self):
-        assert 0.0 <= self.CF <= 2.0
+        assert 0.0 <= self.CF <= 3.0
 
     def calc_VarCf(self):
         # Arcing current variation correction factor.
@@ -129,7 +129,10 @@ class Cubicle:
             elif self.EC in ("VCBB", "HCB",):
                 height_1 = eq_11_12(h)
         elif 1244.6 < h:
-            height_1 = 49
+            if self.EC == "VCB":
+                height_1 = 49
+            elif self.EC in ("VCBB", "HCB",):
+                height_1 = eq_11_12(1244.6)
 
         # Equation 13
         EES = (height_1 + width_1) / 2
