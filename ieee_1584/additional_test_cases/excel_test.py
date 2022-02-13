@@ -39,11 +39,13 @@ assert os.path.exists(path_spreadsheet_min) and os.path.isfile(path_spreadsheet_
 # Output file
 csv_out_file = "ieee_1584_spreadsheet_results.csv"
 
-# Use this version for development (uses existing instance of Excel, generates/caches static bindings)
-# with win32com_client.gencache.EnsureDispatch("Excel.Application") as app:
 
-# Use this version for production (opens a new instance of Excel)
-with win32com_client.Dispatch("Excel.Application") as app:
+try:
+    # Use this version for development (uses existing instance of Excel, generates/caches static bindings)
+    # with win32com_client.gencache.EnsureDispatch("Excel.Application") as app:
+
+    # Use this version for production (opens a new instance of Excel)
+    app =  win32com_client.Dispatch("Excel.Application")
     # Open workbooks and acquire relevant cell ranges.
     # Note output cells are at different addresses on the max spreadsheet vs. the min spreadsheet
 
@@ -93,8 +95,8 @@ with win32com_client.Dispatch("Excel.Application") as app:
             print(
                 f"{n}/{no_of_scenarios} ({n / no_of_scenarios * 100:.1f}%), averaging {avg_time * 1000:.1f} ms/scenario, {time_left / 60:.0f} min remaining")
 
-        if n > 20:
-            break
+        # if n > 20:
+        #     break
 
         # Unpack scenario values
         EC, V_oc, I_bf, G, D, T, width, height, depth = scenario
@@ -152,7 +154,7 @@ with win32com_client.Dispatch("Excel.Application") as app:
     app.ScreenUpdating = True
     app.EnableEvents = True
 
+finally:
     # Close Excel
-    # (Hopefully the context manager `with` will take care of this too.)
     app.DisplayAlerts = False  # Suppress "Save changes to file?" dialogs.
     app.Quit()
