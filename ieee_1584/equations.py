@@ -1,6 +1,7 @@
 # Copyright 2022, Li-aung Yip - https://www.penwatch.net
 # Licensed under the MIT License. Refer LICENSE.txt.
 
+import logging
 from math import log10, sqrt
 
 from ieee_1584.cubicle import Cubicle
@@ -36,24 +37,15 @@ def I_arc_min(c: Cubicle, I_arc: float):
 
 
 def E_AFB_intermediate(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: float, I_arc_600: float = None):
-    # Note that equations (3, 4, 5, 6) for incident energy "E", and (7, 8, 9, 10) for arc flash boundary "AFB", are
-    # closely related.
-    #
-    # In fact, Eq 3 is simply an algebraic rearrangement of Eq 7.
-    #
-    #   * "E" is the energy for a fixed distance "D".
-    #   * "AFB" is the distance for a fixed energy 1.2 cal/cm².
-    #
-    # Since both "E" and "AFB" are calculated using the same variables, it makes sense to calculate both at the same
-    # time.
-    #
-    # Note the funny number "50/12.552" in Eq 3/4/5/6 turns into the magic number 20 in Eq 7/8/9/10.
-    # 1.2 cal/cm² × 4.184 J/cal = 5.0208 J/cm²
-    # 50 / 12.552 * 5.0208 = 20 (exact)
-    #
-    # Also note that "k12" has the same role as the "distance exponent, x" did in IEEE 1584-2002.
-    # That is, k12 determines the falloff of energy with distance.
+    logging.warning(
+        "Function E_AFB_intermediate() is deprecated. Use intermediate_E() and intermediate_AFB_from_E() instead.")
+    E = intermediate_E(c, V_oc, I_arc, I_bf, T, I_arc_600)
+    AFB = intermediate_AFB_from_E(c, V_oc, E)
+    return E, AFB
 
+
+def intermediate_E(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: float, I_arc_600: float = None):
+    # Implements equations 3, 4, 5, 6 for "intermediate incident energy".
     assert (V_oc <= 0.6) or (V_oc in (0.6, 2.7, 14.3,))
 
     if V_oc <= 0.6:
@@ -93,30 +85,20 @@ def E_AFB_intermediate(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: fl
     # Equations 3, 4, 5, 6
     E = x1 * 10 ** (x2 + x3 + x4 + x5)
 
-    # # Equations 7, 8, 9, 10
-    # # The official equations
-    # x6_num = x2 + x3 + x4 - log10(20 / T)
-    # x6_den = - k["k12"]  # note -ve sign
-    # x6 = x6_num / x6_den
-    # AFB = 10 ** x6
-
-    # Equations 7, 8, 9, 10
-    # The simplified equations
-    AFB = intermediate_AFB_from_E(c, V_oc, E)
-
     assert E >= 0
-    assert AFB >= 0
 
-    return E, AFB
+    return E
 
 
 def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
+    # Implements equations 7, 8, 9, 10, for "intermediate arc flash boundary", in a simpler way.
+    #
     # Calculates the (intermediate) arc flash boundary, i.e. AFB_600, from the incident energy i.e. E_600 only.
-    # Knowledge of T, G, I_arc, I_bf, and CF is not required.
+    # Knowledge of T, G, I_arc, I_bf, and CF is not required, as it would be if using Eq's 7, 8, 9, 10 directly.
     # This is useful for multi-time-step calculations where there is no singular value of T, I_arc, or I_bf.
     #
-    # Explanation:
-    # ============
+    # Motivation:
+    # ===========
     #
     # The IEEE 1584-2018 formulas for arc flash boundary (AFB), i.e. eq's 7, 8, 9, and 10, are pretty complicated.
     #
@@ -126,6 +108,9 @@ def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
     # This is a problem when doing multi-time-step arc flash calculations where the values of T, I_arc, and I_bf are
     # different for each time-step. What single value of I_arc would you plug into Eq 7, when I_arc is 10 kA for 100 ms,
     # then 5 kA for 900 ms, then 2 kA for 1,000 ms?
+    #
+    # Details:
+    # ========
     #
     # Consider Eq 3 for the quantity E_600.
     #
@@ -162,6 +147,10 @@ def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
     # ** Sidenote: The physical meaning of the quantity "F_600" is that F_600 is, in some sense, the total amount of
     # energy released (i.e. Joules). (The distribution of energy is not isotropic, i.e. k12 != -2.00, so this
     # interpretation is not exact.)
+    #
+    # Sidenote 2: the funny number "50/12.552" in Eq 3/4/5/6 turns into the magic number 20 in Eq 7/8/9/10.
+    # 1.2 cal/cm² × 4.184 J/cal = 5.0208 J/cm²
+    # 50 / 12.552 * 5.0208 = 20 (exact)
 
     assert (V_oc <= 0.6) or (V_oc in (0.6, 2.7, 14.3,))
 
@@ -177,6 +166,7 @@ def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
     # After all the explanation, calculation of the (intermediate) AFB is simply 2 lines.
     F = E / (c.D ** k["k12"])
     AFB = (5.0208 / F) ** (1 / k["k12"])
+    assert AFB >= 0
     return AFB
 
 

@@ -2,7 +2,8 @@
 # Licensed under the MIT License. Refer LICENSE.txt.
 
 from ieee_1584.cubicle import Cubicle
-from ieee_1584.equations import I_arc_intermediate, I_arc_min, E_AFB_intermediate, interpolate, I_arc_final_LV
+from ieee_1584.equations import I_arc_intermediate, I_arc_min, interpolate, I_arc_final_LV, intermediate_E, \
+    intermediate_AFB_from_E
 
 
 class Calculation:
@@ -69,39 +70,34 @@ class Calculation:
 
         if self.vlevel == "HV":
             # Max
-
-            self.E_600_max, self.AFB_600_max = \
-                E_AFB_intermediate(self.c, 0.600, self.I_arc_600_max, self.I_bf, self.T_arc_max)
-
-            self.E_2700_max, self.AFB_2700_max = \
-                E_AFB_intermediate(self.c, 2.700, self.I_arc_2700_max, self.I_bf, self.T_arc_max)
-
-            self.E_14300_max, self.AFB_14300_max = \
-                E_AFB_intermediate(self.c, 14.300, self.I_arc_14300_max, self.I_bf, self.T_arc_max)
+            self.E_600_max = intermediate_E(self.c, 0.600, self.I_arc_600_max, self.I_bf, self.T_arc_max)
+            self.E_2700_max = intermediate_E(self.c, 2.700, self.I_arc_2700_max, self.I_bf, self.T_arc_max)
+            self.E_14300_max = intermediate_E(self.c, 14.300, self.I_arc_14300_max, self.I_bf, self.T_arc_max)
+            self.AFB_600_max = intermediate_AFB_from_E(self.c, 0.600, self.E_600_max)
+            self.AFB_2700_max = intermediate_AFB_from_E(self.c, 2.700, self.E_2700_max)
+            self.AFB_14300_max = intermediate_AFB_from_E(self.c, 14.300, self.E_14300_max)
 
             self.E_max = interpolate(self.c, self.E_600_max, self.E_2700_max, self.E_14300_max)
             self.AFB_max = interpolate(self.c, self.AFB_600_max, self.AFB_2700_max, self.AFB_14300_max)
 
             # Min
-
-            self.E_600_min, self.AFB_600_min = \
-                E_AFB_intermediate(self.c, 0.600, self.I_arc_600_min, self.I_bf, self.T_arc_min)
-
-            self.E_2700_min, self.AFB_2700_min = \
-                E_AFB_intermediate(self.c, 2.700, self.I_arc_2700_min, self.I_bf, self.T_arc_min)
-
-            self.E_14300_min, self.AFB_14300_min = \
-                E_AFB_intermediate(self.c, 14.300, self.I_arc_14300_min, self.I_bf, self.T_arc_min)
+            self.E_600_min = intermediate_E(self.c, 0.600, self.I_arc_600_min, self.I_bf, self.T_arc_min)
+            self.E_2700_min = intermediate_E(self.c, 2.700, self.I_arc_2700_min, self.I_bf, self.T_arc_min)
+            self.E_14300_min = intermediate_E(self.c, 14.300, self.I_arc_14300_min, self.I_bf, self.T_arc_min)
+            self.AFB_600_min = intermediate_AFB_from_E(self.c, 0.600, self.E_600_min)
+            self.AFB_2700_min = intermediate_AFB_from_E(self.c, 2.700, self.E_2700_min)
+            self.AFB_14300_min = intermediate_AFB_from_E(self.c, 14.300, self.E_14300_min)
 
             self.E_min = interpolate(self.c, self.E_600_min, self.E_2700_min, self.E_14300_min)
             self.AFB_min = interpolate(self.c, self.AFB_600_min, self.AFB_2700_min, self.AFB_14300_min)
 
         elif self.vlevel == "LV":
-            self.E_max, self.AFB_max = E_AFB_intermediate(self.c, self.c.V_oc, self.I_arc_max, self.I_bf,
-                                                          self.T_arc_max, self.I_arc_600_max)
-
-            self.E_min, self.AFB_min = E_AFB_intermediate(self.c, self.c.V_oc, self.I_arc_min, self.I_bf,
-                                                          self.T_arc_min, self.I_arc_600_max)
+            self.E_max = intermediate_E(self.c, self.c.V_oc, self.I_arc_max, self.I_bf, self.T_arc_max,
+                                        self.I_arc_600_max)
+            self.E_min = intermediate_E(self.c, self.c.V_oc, self.I_arc_min, self.I_bf, self.T_arc_min,
+                                        self.I_arc_600_max)  # Note I_arc_600_max, **not** I_arc_600_min.
+            self.AFB_max = intermediate_AFB_from_E(self.c, self.c.V_oc, self.E_max)
+            self.AFB_min = intermediate_AFB_from_E(self.c, self.c.V_oc, self.E_min)
 
     def pretty_print(self):
         return \
