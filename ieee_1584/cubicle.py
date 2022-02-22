@@ -32,6 +32,11 @@ class Cubicle:
         self.check_model_bounds()
         self.sanity_check()
 
+        if 0.600 < self.V_oc <= 15.000:
+            self.vlevel = "HV"
+        elif self.V_oc <= 0.600:
+            self.vlevel = "LV"
+
     def check_model_bounds(self):
         # ref IEEE 1584-2018 s4.2 "Range of model"
         # Applying the IEEE 1584-2018 model outside these ranges _WILL_ give incorrect results.
