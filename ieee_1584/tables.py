@@ -62,6 +62,31 @@ Shallow, VCB, 0.002222, -0.02556, 0.6222
 Shallow, VCBB, -0.002778, 0.1194, -0.2778
 Shallow, HCB, -0.0005556, 0.03722, 0.4778"""
 
+# This table typed manually.
+# This is a combination of table 8 and table 10.
+# Headers and equipment class names shortened for brevity.
+# G is typical busbar gap in mm.
+# bh, bw, and bd are enclosure (box) height, width, and depth in mm.
+# D is working distance in mm.
+#
+# LV equipment with "shallow" depth <= 8 inches - set to 100 mm.
+# LV equipment with "deep" depth > 8 inches - set to 250 mm.
+# Precise depths don't matter, only whether the enclosure is "shallow" or "deep".
+table_8_10_raw ="""Equipment class, G, bh, bw, bd, D
+15kV Switchgear,                152.0, 1143.0, 762.0, 762.0, 914.4
+15kV MCC, 152,                  914.4,  914.4, 914.4, 914.4, 914.4
+5kV Switchgear,                 104.0,  914.4, 914.4, 914.4, 914.4
+5kV Switchgear (2),             104.0, 1143.0, 762.0, 762.0, 914.4
+5kV MCC,                        104.0,  660.4, 660.4, 660.4, 914.4
+LV Switchgear,                   32.0,  508.0, 508.0, 508.0, 609.6
+LV MCC (Shallow),                25.0,  355.6, 304.8, 100.0, 457.2
+LV Panelboard (Shallow),         25.0,  355.6, 304.8, 100.0, 457.2
+LV MCC,                          25.0,  355.6, 304.8, 250.0, 457.2
+LV Panelboard,                   25.0,  355.6, 304.8, 250.0, 457.2
+Cable Junction Box (Shallow),    13.0,  355.6, 304.8, 100.0, 457.2
+Cable Junction Box,              13.0,  355.6, 304.8, 250.0, 457.2
+"""
+
 
 def convert_to_table(raw, table_no):
     assert "−" not in raw  # check that all Unicode minus signs (U+2212) have been removed
@@ -71,7 +96,7 @@ def convert_to_table(raw, table_no):
 
     header_row = c.__next__()
 
-    if table_no in (2, 3, 4, 5,):
+    if table_no in (2, 3, 4, 5, 8):
         no_of_key_fields = 1
     elif table_no in (1, 7):
         no_of_key_fields = 2
@@ -82,7 +107,7 @@ def convert_to_table(raw, table_no):
 
     table = dict()
     for row in c:
-        if table_no in (2, 3, 4, 5,):
+        if table_no in (2, 3, 4, 5, 8):
             key = row[0]
         elif table_no == 1:
             key = (row[0], float(row[1]),)
@@ -106,3 +131,4 @@ table_3 = convert_to_table(table_3_raw, 3)
 table_4 = convert_to_table(table_4_raw, 4)
 table_5 = convert_to_table(table_5_raw, 5)
 table_7 = convert_to_table(table_7_raw, 7)
+table_8_10 = convert_to_table(table_8_10_raw, 8)
