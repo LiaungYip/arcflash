@@ -6,37 +6,49 @@ from math import log10, sqrt
 
 from ieee_1584.cubicle import Cubicle
 from ieee_1584.tables import table_1, table_3, table_4, table_5
+from ieee_1584.units import Q_, kA, kV, ms, mm, dimensionless, J_per_sq_cm
 
 
-def I_arc_intermediate(c: Cubicle, V_oc: float, I_bf: float):
+def I_arc_intermediate(c: Cubicle, V_oc: Q_, I_bf: Q_) -> Q_:
+    assert V_oc.check('[electric_potential]')
+    assert I_bf.check('[current]')
     # Equation 1
-    assert V_oc in (0.6, 2.7, 14.3,)
+    assert V_oc in (0.6 * kV, 2.7 * kV, 14.3 * kV,)
 
-    k = table_1[(c.EC, V_oc,)]
+    _V_oc = V_oc.m_as(kV)
+    _I_bf = I_bf.m_as(kA)
+    _G = c.G.m_as(mm)
+
+    k = table_1[(c.EC, _V_oc,)]
 
     x1 = + k["k1"] \
-         + k["k2"] * log10(I_bf) \
-         + k["k3"] * log10(c.G)
+         + k["k2"] * log10(_I_bf) \
+         + k["k3"] * log10(_G)
 
-    x2 = + k["k4"] * I_bf ** 6 \
-         + k["k5"] * I_bf ** 5 \
-         + k["k6"] * I_bf ** 4 \
-         + k["k7"] * I_bf ** 3 \
-         + k["k8"] * I_bf ** 2 \
-         + k["k9"] * I_bf ** 1 \
+    x2 = + k["k4"] * _I_bf ** 6 \
+         + k["k5"] * _I_bf ** 5 \
+         + k["k6"] * _I_bf ** 4 \
+         + k["k7"] * _I_bf ** 3 \
+         + k["k8"] * _I_bf ** 2 \
+         + k["k9"] * _I_bf ** 1 \
          + k["k10"]
 
     I_a = (10 ** x1) * x2
 
-    return I_a
+    return I_a * kA
 
 
-def I_arc_min(c: Cubicle, I_arc: float):
+def I_arc_min(c: Cubicle, I_arc: Q_) -> Q_:
     # Equation 2
-    return I_arc * (1 - 0.5 * c.VarCF)
+
+    assert I_arc.check('[current]')
+    _I_arc = I_arc.m_as(kA)
+    _VarCF = c.VarCF.m_as(dimensionless)
+
+    return _I_arc * (1 - 0.5 * _VarCF) * kA
 
 
-def E_AFB_intermediate(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: float, I_arc_600: float = None):
+def E_AFB_intermediate(c: Cubicle, V_oc: Q_, I_arc: Q_, I_bf: Q_, T: Q_, I_arc_600: Q_ = None) -> (Q_, Q_,):
     logging.warning(
         "Function E_AFB_intermediate() is deprecated. Use intermediate_E() and intermediate_AFB_from_E() instead.")
     E = intermediate_E(c, V_oc, I_arc, I_bf, T, I_arc_600)
@@ -44,53 +56,72 @@ def E_AFB_intermediate(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: fl
     return E, AFB
 
 
-def intermediate_E(c: Cubicle, V_oc: float, I_arc: float, I_bf: float, T: float, I_arc_600: float = None):
+def intermediate_E(c: Cubicle, V_oc: Q_, I_arc: Q_, I_bf: Q_, T: Q_, I_arc_600: Q_ = None) -> Q_:
     # Implements equations 3, 4, 5, 6 for "intermediate incident energy".
-    assert (V_oc <= 0.6) or (V_oc in (0.6, 2.7, 14.3,))
 
-    if V_oc <= 0.6:
+    assert V_oc.check('[electric_potential]')
+    assert I_arc.check('[current]')
+    assert I_bf.check('[current]')
+    assert T.check('[time]')
+    assert I_arc_600 is None or I_arc_600.check('[current]')
+
+    _V_oc = V_oc.m_as(kV)
+    _I_arc = I_arc.m_as(kA)
+    _I_bf = I_bf.m_as(kA)
+    _T = T.m_as(ms)
+    if I_arc_600 is None:
+        _I_arc_600 = None
+    else:
+        _I_arc_600 = I_arc_600.m_as(kA)
+    _G = c.G.m_as(mm)
+    _CF = c.CF.m_as(dimensionless)
+    _D = c.D.m_as(mm)
+
+    assert (V_oc <= 0.6 * kV) or (V_oc in (0.6 * kV, 2.7 * kV, 14.3 * kV,))
+
+    if V_oc <= 0.6 * kV:
         k = table_3[c.EC]
-    elif V_oc == 2.7:
+    elif V_oc == 2.7 * kV:
         k = table_4[c.EC]
-    elif V_oc == 14.3:
+    elif V_oc == 14.3 * kV:
         k = table_5[c.EC]
     else:
         k = None
 
-    x1 = 12.552 / 50 * T
+    x1 = 12.552 / 50 * _T
 
-    x2 = k["k1"] + k["k2"] * log10(c.G)
+    x2 = k["k1"] + k["k2"] * log10(_G)
 
     if I_arc_600 is None:  # HV case. Eqs 3, 4, 5
-        x3_num = k["k3"] * I_arc
+        x3_num = k["k3"] * _I_arc
     else:  # LV case. Eq 6.
-        x3_num = k["k3"] * I_arc_600
+        x3_num = k["k3"] * _I_arc_600
 
-    x3_den = + k["k4"] * I_bf ** 7 \
-             + k["k5"] * I_bf ** 6 \
-             + k["k6"] * I_bf ** 5 \
-             + k["k7"] * I_bf ** 4 \
-             + k["k8"] * I_bf ** 3 \
-             + k["k9"] * I_bf ** 2 \
-             + k["k10"] * I_bf
+    x3_den = + k["k4"] * _I_bf ** 7 \
+             + k["k5"] * _I_bf ** 6 \
+             + k["k6"] * _I_bf ** 5 \
+             + k["k7"] * _I_bf ** 4 \
+             + k["k8"] * _I_bf ** 3 \
+             + k["k9"] * _I_bf ** 2 \
+             + k["k10"] * _I_bf
 
     x3 = x3_num / x3_den
 
-    x4 = + k["k11"] * log10(I_bf) \
-         + k["k13"] * log10(I_arc) \
-         + log10(1 / c.CF)
+    x4 = + k["k11"] * log10(_I_bf) \
+         + k["k13"] * log10(_I_arc) \
+         + log10(1 / _CF)
 
-    x5 = k["k12"] * log10(c.D)
+    x5 = k["k12"] * log10(_D)
 
     # Equations 3, 4, 5, 6
     E = x1 * 10 ** (x2 + x3 + x4 + x5)
 
     assert E >= 0
 
-    return E
+    return E * J_per_sq_cm
 
 
-def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
+def intermediate_AFB_from_E(c: Cubicle, V_oc: Q_, E: Q_) -> Q_:
     # Implements equations 7, 8, 9, 10, for "intermediate arc flash boundary", in a simpler way.
     #
     # Calculates the (intermediate) arc flash boundary, i.e. AFB_600, from the incident energy i.e. E_600 only.
@@ -152,45 +183,59 @@ def intermediate_AFB_from_E(c: Cubicle, V_oc: float, E: float):
     # 1.2 cal/cm² × 4.184 J/cal = 5.0208 J/cm²
     # 50 / 12.552 * 5.0208 = 20 (exact)
 
-    assert (V_oc <= 0.6) or (V_oc in (0.6, 2.7, 14.3,))
+    assert V_oc.check('[electric_potential]')
+    assert E.check('[energy]/[area]')
 
-    if V_oc <= 0.6:
+    _V_oc = V_oc.m_as(kV)
+    _E = E.m_as(J_per_sq_cm)
+    _D = c.D.m_as(mm)
+
+    assert (V_oc <= 0.6 * kV) or (V_oc in (0.6 * kV, 2.7 * kV, 14.3 * kV,))
+
+    if V_oc <= 0.6 * kV:
         k = table_3[c.EC]
-    elif V_oc == 2.7:
+    elif V_oc == 2.7 * kV:
         k = table_4[c.EC]
-    elif V_oc == 14.3:
+    elif V_oc == 14.3 * kV:
         k = table_5[c.EC]
     else:
         k = None
 
     # After all the explanation, calculation of the (intermediate) AFB is simply 2 lines.
-    F = E / (c.D ** k["k12"])
+    F = _E / (_D ** k["k12"])
     AFB = (5.0208 / F) ** (1 / k["k12"])
     assert AFB >= 0
-    return AFB
+    return AFB * mm
 
 
-def interpolate(c: Cubicle, x_600, x_2700, x_14300):
-    V_oc = c.V_oc
+def interpolate(c: Cubicle, x_600: Q_, x_2700: Q_, x_14300: Q_) -> Q_:
+    _V_oc = c.V_oc.m_as(kV)
 
     # Eq 16, Eq 19, Eq 22
-    x1 = (((x_2700 - x_600) / 2.1) * (V_oc - 2.7)) + x_2700
+    x1 = (((x_2700 - x_600) / 2.1) * (_V_oc - 2.7)) + x_2700
     # Eq 17, Eq 20, Eq 23
-    x2 = (((x_14300 - x_2700) / 11.6) * (V_oc - 14.3)) + x_14300
+    x2 = (((x_14300 - x_2700) / 11.6) * (_V_oc - 14.3)) + x_14300
     # Eq 18, Eq 21, Eq 24
-    x3 = ((x1 * (2.7 - V_oc)) / 2.1) + ((x2 * (V_oc - 0.6)) / 2.1)
+    x3 = ((x1 * (2.7 - _V_oc)) / 2.1) + ((x2 * (_V_oc - 0.6)) / 2.1)
 
-    if 0.600 < V_oc <= 2.7:
+    if 0.600 < _V_oc <= 2.7:
         return x3
-    elif V_oc > 2.7:
+    elif _V_oc > 2.7:
         return x2
 
 
-def I_arc_final_LV(c: Cubicle, I_arc_600, I_bf):
+def I_arc_final_LV(c: Cubicle, I_arc_600: Q_, I_bf: Q_) -> Q_:
     # Equation 25
-    V_oc = c.V_oc
-    x1 = (0.6 / V_oc) ** 2
-    x2 = 1 / (I_arc_600 ** 2)
-    x3 = (0.6 ** 2 - V_oc ** 2) / (0.6 ** 2 * I_bf ** 2)
+
+    assert I_arc_600.check('[current]')
+    assert I_bf.check('[current]')
+
+    _V_oc = c.V_oc.m_as(kV)
+    _I_arc_600 = I_arc_600.m_as(kA)
+    _I_bf = I_bf.m_as(kA)
+
+    x1 = (0.6 / _V_oc) ** 2
+    x2 = 1 / (_I_arc_600 ** 2)
+    x3 = (0.6 ** 2 - _V_oc ** 2) / (0.6 ** 2 * _I_bf ** 2)
     x4 = sqrt(x1 * (x2 - x3))
-    return 1 / x4
+    return 1 / x4 * kA

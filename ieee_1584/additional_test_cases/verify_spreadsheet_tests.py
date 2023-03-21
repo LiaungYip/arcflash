@@ -12,6 +12,7 @@ import csv
 
 from ieee_1584.calculation import Calculation
 from ieee_1584.cubicle import Cubicle
+from ieee_1584.units import Q_, kA, kV, ms, mm, dimensionless, J_per_sq_cm
 
 infile = "ieee_1584_spreadsheet_results.csv"
 outfile = "comparison.csv"
@@ -44,11 +45,19 @@ with open(infile) as fh_in:
                 continue
 
             # Do calculations
-            cubicle_params = (r["V_oc"], r["EC"], r["G"], r["D"], r["height"], r["width"], r["depth"],)
+            cubicle_params = (
+                r["V_oc"] * kV,
+                r["EC"],
+                r["G"] * mm,
+                r["D"] * mm,
+                r["height"] * mm,
+                r["width"] * mm,
+                r["depth"] * mm,
+            )
             cubicle = Cubicle(*cubicle_params)
-            calc = Calculation(cubicle, r["I_bf"])
+            calc = Calculation(cubicle, r["I_bf"] * kA)
             calc.calculate_I_arc()
-            calc.calculate_E_AFB(r["T"], r["T"])
+            calc.calculate_E_AFB(r["T"] * ms, r["T"] * ms)
 
             # Check our calcs to official calcs
             ss_results = (
@@ -59,7 +68,7 @@ with open(infile) as fh_in:
             for ss, py in zip(ss_results, py_results):
                 results.append(f"{ss:.5g}")
                 results.append(f"{py:.5g}")
-                results.append(f"{abs(1 - (ss / py)):.1%}")
+                results.append(f"{abs(1 - (ss / py.m)):.1%}")
 
-            out_row = cubicle_params + (r["I_bf"], r["T"],) + tuple(results)
+            out_row = cubicle_params + (r["I_bf"] * kA, r["T"] * ms,) + tuple(results)
             writer.writerow(out_row)

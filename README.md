@@ -56,18 +56,15 @@ The engineers using this library must be **confident** that it will produce corr
       There are currently some errors in the spreadsheet `IEEE ExcelCalculator_V 2.6.6_M_mm_08_29_2019.xlsm`. I have
       attempted to contact the spreadsheet author(s) about this. Details are in the `additional_test_cases` folder.
 
-# Unit conventions
+# Units
 
-* All distances are in units of mm.
-* All currents are in units of kA.
-* All voltages are in units of kV.
-* All incident energies are in J/cm², except where they are specifically labelled as cal/cm².
+The first version of this package (2022-02-22) required data to be entered in specific units of mm, kA, kV and J/cm². This left users vulnerable to unit conversion mishaps (e.g. entering times in sec instead of ms), which would result in severe calculation errors.
 
-Note: My personal preference is normally to either a) use a calculator system that automatically tracks/converts units,
-or b) to use SI base units (metres, amps, volts) in calculations. Those are usually the best way to avoid unit\
-conversion traps.
+As of the second major version of this package (2023-03-21) the code has been converted to use [pint](https://pint.readthedocs.io/en/stable/) for automatic unit tracking in calculations. This allows users to enter data in whatever unit they want (e.g. mm, metres, or inches) - the data will be automatically converted to the right unit.
 
-However, all the formulas in IEEE 1584 are in terms of mm, kA, and kV, so I have maintained that convention here.
+A unit test has been added which uses the exact same data as the example from Annex D2 of the standard, but with different input units (e.g. 480 V instead of 0.48 kV, and 610000 micrometres instead of 610 mm) to ensure the unit conversion code works correctly.
+
+Note that some formulas in IEEE 1584 use a factor of 1 mm = 0.03937 inch, which is a truncated value and thus introduces a small unit conversion error. I have chosen to match the printed text of IEEE 1584 exactly, rather than use the actual conversion factor of 5/127 (approx. 0.03937007874015748).
 
 # License
 
