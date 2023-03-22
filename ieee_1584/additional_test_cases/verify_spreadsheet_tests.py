@@ -55,14 +55,18 @@ with open(infile) as fh_in:
                 r["depth"] * mm,
             )
             cubicle = Cubicle(*cubicle_params)
-            calc = Calculation(cubicle, r["I_bf"] * kA)
-            calc.calculate_I_arc()
-            calc.calculate_E_AFB(r["T"] * ms, r["T"] * ms)
+            calc_max = Calculation(cubicle, r["I_bf"] * kA, "full")
+            calc_max.calculate_I_arc()
+            calc_max.calculate_E_AFB(r["T"] * ms)
+
+            calc_min = Calculation(cubicle, r["I_bf"] * kA, "reduced")
+            calc_min.calculate_I_arc()
+            calc_min.calculate_E_AFB(r["T"] * ms)
 
             # Check our calcs to official calcs
             ss_results = (
                 r["I_arc_max"], r["E_joules_max"], r["AFB_max"], r["I_arc_min"], r["E_joules_min"], r["AFB_min"],)
-            py_results = (calc.I_arc_max, calc.E_max, calc.AFB_max, calc.I_arc_min, calc.E_min, calc.AFB_min,)
+            py_results = (calc_max.I_arc, calc_max.E, calc_max.AFB, calc_min.I_arc, calc_min.E, calc_min.AFB,)
 
             results = list()
             for ss, py in zip(ss_results, py_results):
