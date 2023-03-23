@@ -5,7 +5,7 @@ from ieee_1584.cubicle import Cubicle
 from ieee_1584.equations import I_arc_intermediate, I_arc_min, interpolate, I_arc_final_LV, intermediate_E, \
     intermediate_AFB_from_E
 
-from ieee_1584.units import Q_, kV, cal_per_sq_cm
+from ieee_1584.units import Q_, kV, cal_per_sq_cm, sec
 
 
 class Calculation:
@@ -70,7 +70,7 @@ class Calculation:
     def calculate_E_AFB(self, T_arc: Q_) -> None:
         assert T_arc.check('[time]')
 
-        self.T_arc = T_arc
+        self.T_arc = T_arc.to(sec)
 
         if self.c.vlevel == "HV":
             # Max
@@ -97,7 +97,7 @@ Calculated:
 
 I_arc = {self.I_arc:.3f~P} ({self.full_or_reduced})
 
-Then, with T_arc = {self.T_arc:.1f~P}:
+Then, with T_arc = {self.T_arc:.3f~P}:
 
 E = {self.E:.3f~P} or {self.E.to(cal_per_sq_cm):.3f~P}
 AFB = {self.AFB:.0f~P}
