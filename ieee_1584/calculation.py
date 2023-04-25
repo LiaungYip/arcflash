@@ -5,7 +5,7 @@ from ieee_1584.cubicle import Cubicle
 from ieee_1584.equations import I_arc_intermediate, I_arc_min, interpolate, I_arc_final_LV, intermediate_E, \
     intermediate_AFB_from_E
 
-from ieee_1584.units import Q_, kV, cal_per_sq_cm
+from ieee_1584.units import Q_, kV, cal_per_sq_cm, sec, kA
 
 
 class Calculation:
@@ -17,6 +17,11 @@ class Calculation:
         # "maximum fault operating scenario" and "minimum fault operating scenario" in context.
 
         assert I_bf.check('[current]')
+
+        if (0.208 * kV <= c.V_oc <= 0.600 * kV) and not (0.500 * kA <= I_bf <= 106.000 * kA):
+            raise ValueError(f"I_bf out of range for LV calculation. I_bf = {I_bf:.3f~P} is outside the range 500 A to 106 kA.")
+        elif (0.600 * kV < c.V_oc <= 15.000 * kV) and not (0.200 * kA <= I_bf <= 65.000 * kA):
+            raise ValueError(f"I_bf out of range for HV calculation. I_bf = {I_bf:.3f~P} is outside the range 200 A to 65 kA.")
 
         assert full_or_reduced in ("full", "reduced",)
 
@@ -70,7 +75,7 @@ class Calculation:
     def calculate_E_AFB(self, T_arc: Q_) -> None:
         assert T_arc.check('[time]')
 
-        self.T_arc = T_arc
+        self.T_arc = T_arc.to(sec)
 
         if self.c.vlevel == "HV":
             # Max
@@ -97,7 +102,7 @@ Calculated:
 
 I_arc = {self.I_arc:.3f~P} ({self.full_or_reduced})
 
-Then, with T_arc = {self.T_arc:.1f~P}:
+Then, with T_arc = {self.T_arc:.3f~P}:
 
 E = {self.E:.3f~P} or {self.E.to(cal_per_sq_cm):.3f~P}
 AFB = {self.AFB:.0f~P}
