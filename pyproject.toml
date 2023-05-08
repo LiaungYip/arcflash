@@ -16,3 +16,9 @@ dependencies = [
 
 [project.urls]
 Source = "https://github.com/LiaungYip/arcflash"
+
+[tool.flit.sdist]
+exclude = [
+    ".gitignore",
+    "arcflash/ieee_1584/additional_test_cases/",
+]
