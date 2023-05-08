@@ -2,8 +2,8 @@
 # Licensed under the MIT License. Refer LICENSE.txt.
 
 
-from ieee_1584.tables import table_2, table_7
-from ieee_1584.units import Q_, kV, mm, inch, dimensionless
+from arcflash.ieee_1584.tables import table_2, table_7
+from arcflash.ieee_1584.units import Q_, kV, mm, inch, dimensionless
 
 
 class Cubicle:

@@ -1,7 +1,7 @@
-from ieee_1584.calculation import Calculation
-from ieee_1584.cubicle import Cubicle
-from ieee_1584.equations import intermediate_AFB_from_E, interpolate
-from ieee_1584.units import kV, Q_
+from arcflash.ieee_1584.calculation import Calculation
+from arcflash.ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.equations import intermediate_AFB_from_E, interpolate
+from arcflash.ieee_1584.units import kV, Q_
 
 
 def multistep_E_and_AFB(c: Cubicle, calc_steps: list[Calculation]) -> (Q_, Q_):

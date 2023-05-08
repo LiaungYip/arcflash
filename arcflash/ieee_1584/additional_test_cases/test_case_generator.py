@@ -18,7 +18,7 @@
 import itertools
 from math import prod
 
-from ieee_1584.units import Q_, kA, kV, ms, mm
+from arcflash.ieee_1584.units import kA, kV, ms, mm
 
 # Electrode configuration: pick one of five options.
 EC = (

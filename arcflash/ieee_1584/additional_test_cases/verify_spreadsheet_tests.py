@@ -10,9 +10,9 @@
 
 import csv
 
-from ieee_1584.calculation import Calculation
-from ieee_1584.cubicle import Cubicle
-from ieee_1584.units import Q_, kA, kV, ms, mm, dimensionless, J_per_sq_cm
+from arcflash.ieee_1584.calculation import Calculation
+from arcflash.ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.units import kA, kV, ms, mm
 
 infile = "ieee_1584_spreadsheet_results.csv"
 outfile = "comparison.csv"

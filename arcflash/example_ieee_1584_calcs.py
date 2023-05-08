@@ -1,7 +1,7 @@
-from ieee_1584.calculation import Calculation
-from ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.calculation import Calculation
+from arcflash.ieee_1584.cubicle import Cubicle
 
-from ieee_1584.units import kA, kV, ms, mm, inch, dimensionless, J_per_sq_cm
+from arcflash.ieee_1584.units import kA, kV, ms, mm
 
 if __name__ == '__main__':
     # IEEE 1584-2018 "D.1 Sample arc-flash incident energy calculation for a medium-voltage system"

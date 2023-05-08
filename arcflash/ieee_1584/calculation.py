@@ -1,11 +1,11 @@
 # Copyright 2022, Li-aung Yip - https://www.penwatch.net
 # Licensed under the MIT License. Refer LICENSE.txt.
 
-from ieee_1584.cubicle import Cubicle
-from ieee_1584.equations import I_arc_intermediate, I_arc_min, interpolate, I_arc_final_LV, intermediate_E, \
+from arcflash.ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.equations import I_arc_intermediate, I_arc_min, interpolate, I_arc_final_LV, intermediate_E, \
     intermediate_AFB_from_E
 
-from ieee_1584.units import Q_, kV, cal_per_sq_cm, sec, kA
+from arcflash.ieee_1584.units import Q_, kV, cal_per_sq_cm, sec, kA
 
 
 class Calculation:

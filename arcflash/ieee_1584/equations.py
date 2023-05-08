@@ -4,9 +4,9 @@
 import logging
 from math import log10, sqrt
 
-from ieee_1584.cubicle import Cubicle
-from ieee_1584.tables import table_1, table_3, table_4, table_5
-from ieee_1584.units import Q_, kA, kV, ms, mm, dimensionless, J_per_sq_cm
+from arcflash.ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.tables import table_1, table_3, table_4, table_5
+from arcflash.ieee_1584.units import Q_, kA, kV, ms, mm, dimensionless, J_per_sq_cm
 
 
 def I_arc_intermediate(c: Cubicle, V_oc: Q_, I_bf: Q_) -> Q_:

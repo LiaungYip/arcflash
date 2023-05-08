@@ -3,10 +3,10 @@
 
 import unittest
 
-from ieee_1584.calculation import Calculation
-from ieee_1584.cubicle import Cubicle
-from ieee_1584.units import ureg, kA, kV, ms, mm, inch, dimensionless, J_per_sq_cm
-from ieee_1584.multistep import multistep_E_and_AFB
+from arcflash.ieee_1584.calculation import Calculation
+from arcflash.ieee_1584.cubicle import Cubicle
+from arcflash.ieee_1584.units import kA, kV, ms, mm, J_per_sq_cm
+from arcflash.ieee_1584.multistep import multistep_E_and_AFB
 
 
 class MultistepTest(unittest.TestCase):
