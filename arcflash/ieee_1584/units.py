@@ -14,8 +14,10 @@ mm = ureg.millimetre
 sec = ureg.second
 ms = ureg.millisecond
 
+V = ureg.volt
 kV = ureg.kilovolt
 
+A = ureg.ampere
 kA = ureg.kiloampere
 
 J_per_sq_cm = ureg.joule / (ureg.centimetre ** 2)
